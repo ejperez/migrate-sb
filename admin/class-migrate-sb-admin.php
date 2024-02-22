@@ -20,7 +20,8 @@
  * @subpackage Migrate_Sb/admin
  * @author     EJ Perez <ej.perez@stok.se>
  */
-class Migrate_Sb_Admin {
+class Migrate_Sb_Admin
+{
 
 	/**
 	 * The ID of this plugin.
@@ -47,11 +48,15 @@ class Migrate_Sb_Admin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct($plugin_name, $version)
+	{
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
+		add_action('admin_init', function () {
+			register_setting('migrate_sb_settings_group', 'migrate_sb_settings');
+		});
 	}
 
 	/**
@@ -59,7 +64,8 @@ class Migrate_Sb_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -73,8 +79,7 @@ class Migrate_Sb_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/migrate-sb-admin.css', array(), $this->version, 'all' );
-
+		wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/migrate-sb-admin.css', array(), $this->version, 'all');
 	}
 
 	/**
@@ -82,7 +87,8 @@ class Migrate_Sb_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts()
+	{
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -96,8 +102,38 @@ class Migrate_Sb_Admin {
 		 * class.
 		 */
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/migrate-sb-admin.js', array( 'jquery' ), $this->version, false );
-
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/migrate-sb-admin.js', array('jquery'), $this->version, false);
 	}
 
+	public function display_admin_page()
+	{
+		add_menu_page(
+			'Migrate SB',
+			'Migrate SB',
+			'manage_options',
+			'migrate-sb',
+			[$this, 'admin_page'],
+			'dashicons-update',
+			'80'
+		);
+
+		add_submenu_page(
+			'migrate-sb',
+			'Storyblok Settings',
+			'Storyblok Settings',
+			'manage_options',
+			'storyblok-settings',
+			[$this, 'admin_subpage'],
+		);
+	}
+
+	public function admin_subpage()
+	{
+		include 'partials/migrate-sb-admin-display-sub.php';
+	}
+
+	public function admin_page()
+	{
+		include 'partials/migrate-sb-admin-display.php';
+	}
 }
