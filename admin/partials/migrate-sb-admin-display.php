@@ -11,6 +11,9 @@
  * @package    Migrate_Sb
  * @subpackage Migrate_Sb/admin/partials
  */
+require __DIR__ . '/../../vendor/autoload.php';
+
+use Storyblok\ManagementClient;
 
 $posts = get_posts([
 	'post_type' => 'post',
@@ -19,12 +22,21 @@ $posts = get_posts([
 	'order' => 'ASC',
 	'lang' => pll_default_language()
 ]);
+
 $postsOptions = implode('', array_map(function ($item) {
 	return "<option value='$item->ID'>$item->post_title</option>";
-}, $posts ?? []))
-?>
+}, $posts ?? []));
 
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
+$settings = get_option('migrate_sb_settings');
+$managementClient = new ManagementClient($settings['api_token']);
+$folders = $managementClient->get('spaces/' . $settings['space_id'] . '/stories', [
+	'folder_only' => 1,
+	'sort_by' => 'name'
+])->getBody()['stories'];
+$foldersOptions = implode('', array_map(function ($item) {
+	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
+}, $folders ?? []));
+?>
 
 <div class="wrap">
 	<h1>Migrate SB</h1>
@@ -37,6 +49,14 @@ $postsOptions = implode('', array_map(function ($item) {
 			</select>
 		</p>
 
+		<p>
+			Storyblok folder<br>
+			<select name="folder">
+				<?= $foldersOptions ?>
+			</select>
+		</p>
+
+		<input type="hidden" name="action" value="do_sb_migration">
 		<button class="button button-primary" type="submit">Submit</button>
 	</form>
 </div>

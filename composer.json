@@ -1,0 +1,14 @@
+{
+    "name": "stok/migrate-sb",
+    "description": "Migrate Wordpress posts to Storyblok",
+    "type": "wordpress-plugin",
+    "authors": [
+        {
+            "name": "EJ Perez",
+            "email": "ej.perez@stok.se"
+        }
+    ],
+    "require": {
+        "storyblok/php-client": "^2.6"
+    }
+}
