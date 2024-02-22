@@ -136,4 +136,13 @@ class Migrate_Sb_Admin
 	{
 		include 'partials/migrate-sb-admin-display.php';
 	}
+
+	public function process_migration()
+	{
+		if(isset($_POST['action']) && $_POST['action'] === 'do_sb_migration') {
+			echo 'here';
+
+			exit;
+		}		
+	}
 }
