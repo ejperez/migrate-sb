@@ -139,10 +139,12 @@ class Migrate_Sb_Admin
 
 	public function process_migration()
 	{
-		if(isset($_POST['action']) && $_POST['action'] === 'do_sb_migration') {
-			echo 'here';
+		if (!isset($_POST['action']) || (isset($_POST['action']) && $_POST['action'] !== 'do_sb_migration')) {
+			return;
+		}
 
-			exit;
-		}		
+		var_dump($_POST);
+
+		exit;
 	}
 }

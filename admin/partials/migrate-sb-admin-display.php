@@ -20,7 +20,7 @@ $posts = get_posts([
 	'posts_per_page' => -1,
 	'orderby' => 'post_title',
 	'order' => 'ASC',
-	'lang' => pll_default_language()
+	'lang' => pll_current_language()
 ]);
 
 $postsOptions = implode('', array_map(function ($item) {
