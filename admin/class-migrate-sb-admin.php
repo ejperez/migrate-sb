@@ -143,10 +143,13 @@ class Migrate_Sb_Admin
 			return;
 		}
 
-		$settings = get_option('migrate_sb_settings');
+		ini_set('max_execution_time', 3600);
+
 		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
+
+		$settings = get_option('migrate_sb_settings');
 		$sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
-		var_dump($_POST);
+		$sb->postStories($_POST);
 
 		exit;
 	}

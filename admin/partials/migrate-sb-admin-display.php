@@ -12,6 +12,8 @@
  * @subpackage Migrate_Sb/admin/partials
  */
 
+require __DIR__ . '/../../includes/class-migrate-sb-storyblok.php';
+
 $posts = get_posts([
 	'post_type' => 'post',
 	'posts_per_page' => -1,
@@ -25,7 +27,6 @@ $postsOptions = implode('', array_map(function ($item) {
 }, $posts ?? []));
 
 $settings = get_option('migrate_sb_settings');
-require __DIR__ . '/../../includes/class-migrate-sb-storyblok.php';
 $sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
 $foldersOptions = implode('', array_map(function ($item) {
 	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
