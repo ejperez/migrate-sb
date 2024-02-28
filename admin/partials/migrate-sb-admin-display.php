@@ -11,9 +11,6 @@
  * @package    Migrate_Sb
  * @subpackage Migrate_Sb/admin/partials
  */
-require __DIR__ . '/../../vendor/autoload.php';
-
-use Storyblok\ManagementClient;
 
 $posts = get_posts([
 	'post_type' => 'post',
@@ -28,14 +25,11 @@ $postsOptions = implode('', array_map(function ($item) {
 }, $posts ?? []));
 
 $settings = get_option('migrate_sb_settings');
-$managementClient = new ManagementClient($settings['api_token']);
-$folders = $managementClient->get('spaces/' . $settings['space_id'] . '/stories', [
-	'folder_only' => 1,
-	'sort_by' => 'name'
-])->getBody()['stories'];
+require __DIR__ . '/../../includes/class-migrate-sb-storyblok.php';
+$sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
 $foldersOptions = implode('', array_map(function ($item) {
 	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
-}, $folders ?? []));
+}, $sb->getFolders() ?? []));
 ?>
 
 <div class="wrap">
@@ -57,6 +51,8 @@ $foldersOptions = implode('', array_map(function ($item) {
 		</p>
 
 		<input type="hidden" name="action" value="do_sb_migration">
+		<input type="hidden" name="lang" value="<?= pll_current_language() ?>">
+		<input type="hidden" name="type" value="post">
 		<button class="button button-primary" type="submit">Submit</button>
 	</form>
 </div>

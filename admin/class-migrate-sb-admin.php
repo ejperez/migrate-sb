@@ -143,6 +143,9 @@ class Migrate_Sb_Admin
 			return;
 		}
 
+		$settings = get_option('migrate_sb_settings');
+		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
+		$sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
 		var_dump($_POST);
 
 		exit;
