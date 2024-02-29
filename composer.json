@@ -9,6 +9,7 @@
         }
     ],
     "require": {
-        "storyblok/php-client": "^2.6"
+        "storyblok/php-client": "^2.6",
+        "ueberdosis/tiptap-php": "^1.3"
     }
 }

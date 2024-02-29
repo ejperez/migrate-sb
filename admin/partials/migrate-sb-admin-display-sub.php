@@ -22,12 +22,17 @@ $settings = get_option('migrate_sb_settings');
 		<?php settings_fields('migrate_sb_settings_group'); ?>
 		<p>
 			API Token<br>
-			<input class="all-options code" name="migrate_sb_settings[api_token]" type="text" value="<?= $settings['api_token'] ?? '' ?>">
+			<input class="all-options code" name="migrate_sb_settings[api_token]" type="text" value="<?= $settings['api_token'] ?? '' ?>" required>
+		</p>
+
+		<p>
+			Preview Access Token<br>
+			<input class="all-options code" name="migrate_sb_settings[preview_access_token]" type="text" value="<?= $settings['preview_access_token'] ?? '' ?>" required>
 		</p>
 
 		<p>
 			Space ID<br>
-			<input class="all-options code" name="migrate_sb_settings[space_id]" type="text" value="<?= $settings['space_id'] ?? '' ?>">
+			<input class="all-options code" name="migrate_sb_settings[space_id]" type="text" value="<?= $settings['space_id'] ?? '' ?>" required>
 		</p>
 
 		<?php submit_button(); ?>

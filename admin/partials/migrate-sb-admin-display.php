@@ -26,17 +26,16 @@ $postsOptions = implode('', array_map(function ($item) {
 	return "<option value='$item->ID'>$item->post_title</option>";
 }, $posts ?? []));
 
-$settings = get_option('migrate_sb_settings');
-$sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
+$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
 $foldersOptions = implode('', array_map(function ($item) {
-	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
+	return sprintf("<option value='%s|%s'>%s</option>", $item['id'], $item['full_slug'], $item['name']);
 }, $sb->getFolders() ?? []));
 ?>
 
 <div class="wrap">
 	<h1>Migrate SB</h1>
 
-	<form target="_blank" method="post" action="<?= home_url() ?>">
+	<form target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
 			Posts (<?= count($posts) ?>)<br>
 			<select name="posts[]" multiple size="20">
@@ -53,7 +52,7 @@ $foldersOptions = implode('', array_map(function ($item) {
 
 		<input type="hidden" name="action" value="do_sb_migration">
 		<input type="hidden" name="lang" value="<?= pll_current_language() ?>">
-		<input type="hidden" name="type" value="post">
+		<input type="hidden" name="type" value="post">		
 		<button class="button button-primary" type="submit">Submit</button>
 	</form>
 </div>

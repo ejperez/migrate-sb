@@ -147,8 +147,7 @@ class Migrate_Sb_Admin
 
 		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
 
-		$settings = get_option('migrate_sb_settings');
-		$sb = new Migrate_Sb_Storyblok($settings['api_token'], $settings['space_id']);
+		$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
 		$sb->postStories($_POST);
 
 		exit;
