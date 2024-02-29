@@ -71,8 +71,6 @@ class Migrate_Sb_Storyblok
 				]
 			];
 
-			c_dump($story['content']['body']);
-
 			if ($existing) {
 				try {
 					$storyResult = $this->managementClient->put(
