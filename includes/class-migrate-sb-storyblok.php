@@ -64,7 +64,7 @@ class Migrate_Sb_Storyblok
 			$story = [
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
-				"parent_id" => $args['folder'],
+				"parent_id" => $folderId,
 				"content" =>  [
 					"component" =>  "page",
 					"body" =>  $blocks
