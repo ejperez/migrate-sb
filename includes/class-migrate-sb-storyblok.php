@@ -9,19 +9,16 @@ use Storyblok\Client;
 class Migrate_Sb_Storyblok
 {
 	private $managementClient;
-	private $contentDeliveryClient;
 	private $settings;
 
 	public function __construct($settings)
 	{
 		$this->settings = wp_parse_args($settings, [
 			'api_token' => null,
-			'preview_access_token' => null,
 			'space_id'
 		]);
 
 		$this->managementClient = new ManagementClient($this->settings['api_token']);
-		$this->contentDeliveryClient = new Client($this->settings['preview_access_token']);
 	}
 
 	public function getFolders()
@@ -49,14 +46,16 @@ class Migrate_Sb_Storyblok
 
 		foreach ($args['posts'] as $postId) {
 			$currentPost = get_post($postId);
-			list($folderId, $folderSlug) = explode('|', $args['folder']);
+			$sbId = get_post_meta($postId, 'storyblok_id', true);
+			$existing = false;
 
 			echo "WP: $currentPost->post_title ";
 
-			try {
-				$existing = $this->contentDeliveryClient->getStoryBySlug($folderSlug . '/' . $currentPost->post_name)->getBody();
-			} catch (Exception $exception) {
-				$existing = false;
+			if ($sbId) {
+				try {
+					$existing = $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/stories/' . $sbId)->getBody();
+				} catch (Exception $exception) {
+				}
 			}
 
 			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections']);
@@ -64,7 +63,7 @@ class Migrate_Sb_Storyblok
 			$story = [
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
-				"parent_id" => $folderId,
+				"parent_id" => $args['folder'],
 				"content" =>  [
 					"component" =>  "page",
 					"body" =>  $blocks
@@ -73,16 +72,15 @@ class Migrate_Sb_Storyblok
 
 			if ($existing) {
 				try {
-					$storyResult = $this->managementClient->put(
-						'spaces/' . $this->settings['space_id'] . '/stories/' . $existing['story']['id'],
+					$this->managementClient->put(
+						'spaces/' . $this->settings['space_id'] . '/stories/' . $sbId,
 						['story' => $story]
 					)->getBody();
 
-					$id = $storyResult['story']['id'];
-					echo "<span style='color:blue'>SB: $id</span><br>";
+					echo "<span style='color:blue'>Updated $sbId!</span><br>";
 				} catch (Exception $exception) {
 					$message = $exception->getMessage();
-					echo "<span style='color:red'>SB: $message</span><br>";
+					echo "<span style='color:red'>$message</span><br>";
 				}
 			} else {
 				try {
@@ -92,10 +90,12 @@ class Migrate_Sb_Storyblok
 					)->getBody();
 
 					$id = $storyResult['story']['id'];
-					echo "<span style='color:green'>SB: $id</span><br>";
+
+					echo "<span style='color:green'>Created $id!</span><br>";
+					update_post_meta($postId, 'storyblok_id', $id);
 				} catch (Exception $exception) {
 					$message = $exception->getMessage();
-					echo "<span style='color:red'>SB: $message</span><br>";
+					echo "<span style='color:red'>$message</span><br>";
 				}
 			}
 		}

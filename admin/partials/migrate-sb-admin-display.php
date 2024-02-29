@@ -28,7 +28,7 @@ $postsOptions = implode('', array_map(function ($item) {
 
 $sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
 $foldersOptions = implode('', array_map(function ($item) {
-	return sprintf("<option value='%s|%s'>%s</option>", $item['id'], $item['full_slug'], $item['name']);
+	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
 }, $sb->getFolders() ?? []));
 ?>
 
