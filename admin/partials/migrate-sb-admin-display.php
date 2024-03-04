@@ -30,6 +30,9 @@ $sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
 $foldersOptions = implode('', array_map(function ($item) {
 	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
 }, $sb->getFolders() ?? []));
+$assetFoldersOptions = implode('', array_map(function ($item) {
+	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
+}, $sb->getAssetFolders() ?? []));
 ?>
 
 <div class="wrap">
@@ -38,15 +41,22 @@ $foldersOptions = implode('', array_map(function ($item) {
 	<form target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
 			Posts (<?= count($posts) ?>)<br>
-			<select name="posts[]" multiple size="20">
+			<select name="posts[]" multiple size="20" required>
 				<?= $postsOptions ?>
 			</select>
 		</p>
 
 		<p>
 			Storyblok folder<br>
-			<select name="folder">
+			<select name="folder" required>
 				<?= $foldersOptions ?>
+			</select>
+		</p>
+
+		<p>
+			Storyblok folder<br>
+			<select name="assetFolder" required>
+				<?= $assetFoldersOptions ?>
 			</select>
 		</p>
 

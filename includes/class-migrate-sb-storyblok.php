@@ -29,6 +29,11 @@ class Migrate_Sb_Storyblok
 		])->getBody()['stories'];
 	}
 
+	public function getAssetFolders()
+	{
+		return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/asset_folders')->getBody()['asset_folders'];
+	}
+
 	public function postStories($args)
 	{
 		$args = wp_parse_args($args, [
@@ -38,8 +43,8 @@ class Migrate_Sb_Storyblok
 			'folder' => null
 		]);
 
-		if (!$args['folder'] || empty($args['posts'])) {
-			return ['error' => 'No Storyblok folder or posts.'];
+		if (!$args['folder'] || empty($args['posts']) || empty($args['assetFolder'])) {
+			throw new Exception('No Storyblok folder/asset folder or posts.');
 		}
 
 		$mapper = new Migrate_Sb_Mapper();
@@ -64,9 +69,9 @@ class Migrate_Sb_Storyblok
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
 				"parent_id" => $args['folder'],
-				"content" =>  [
-					"component" =>  "page",
-					"body" =>  $blocks
+				"content" => [
+					"component" => "page",
+					"body" => $blocks
 				]
 			];
 

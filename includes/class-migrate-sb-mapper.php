@@ -7,6 +7,7 @@ class Migrate_Sb_Mapper
 	public function mapSectionToBlocks($sections)
 	{
 		$blocks = [];
+		$assets = [];
 
 		foreach ($sections as $section) {
 			switch ($section['acf_fc_layout']) {
@@ -24,8 +25,6 @@ class Migrate_Sb_Mapper
 						$node->type = $this->camelToSnake($node->type);
 					});
 
-					c_dump($editor->getDocument());
-
 					$blocks[] = [
 						'component' => 'richContent',
 						'heading' => $section['title'],
@@ -35,6 +34,17 @@ class Migrate_Sb_Mapper
 
 					break;
 				case 'image-full':
+					if(empty($section['images'])) {
+						break;
+					}
+
+					// $blocks[] = [
+					// 	'component' => 'wp-image',
+					// 	'image' => [
+					// 		'filename' => wp_get_attachment_image_url($section['images'][0], 'full')
+					// 	]
+					// ];
+
 					break;
 			}
 		}
