@@ -49,7 +49,7 @@ class Migrate_Sb_Storyblok
 			$sbId = get_post_meta($postId, 'storyblok_id', true);
 			$existing = false;
 
-			echo "WP: $currentPost->post_title ";
+			echo "$currentPost->post_title ";
 
 			if ($sbId) {
 				try {

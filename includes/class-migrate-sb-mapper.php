@@ -11,11 +11,20 @@ class Migrate_Sb_Mapper
 		foreach ($sections as $section) {
 			switch ($section['acf_fc_layout']) {
 				case 'text-editor':
-					$editor = new Tiptap\Editor(['content' => $section['content']]);
+					$editor = new Tiptap\Editor([
+						'content' => $section['content'],
+						'extensions' => [
+							new Tiptap\Extensions\StarterKit,
+							new Tiptap\Nodes\Image,
+							new Tiptap\Marks\Link
+						]
+					]);
 
 					$editor->descendants(function (&$node) {
 						$node->type = $this->camelToSnake($node->type);
 					});
+
+					c_dump($editor->getDocument());
 
 					$blocks[] = [
 						'component' => 'richContent',
