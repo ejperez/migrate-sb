@@ -14,25 +14,34 @@
 
 require __DIR__ . '/../../includes/class-migrate-sb-storyblok.php';
 
-$posts = get_posts([
-	'post_type' => 'post',
-	'posts_per_page' => -1,
-	'orderby' => 'post_title',
-	'order' => 'ASC',
-	'lang' => pll_current_language()
-]);
+$cache = get_transient('migrate_sb_options');
 
-$postsOptions = implode('', array_map(function ($item) {
-	return "<option value='$item->ID'>$item->post_title</option>";
-}, $posts ?? []));
+if(!$cache || isset($_GET['nocache'])) {
+	$posts = get_posts([
+		'post_type' => 'post',
+		'posts_per_page' => -1,
+		'orderby' => 'post_title',
+		'order' => 'ASC',
+		'lang' => pll_current_language()
+	]);
+	$count = count($posts);
+	
+	$postsOptions = implode('', array_map(function ($item) {
+		return "<option value='$item->ID'>$item->post_title</option>";
+	}, $posts ?? []));
+	
+	$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
+	$foldersOptions = implode('', array_map(function ($item) {
+		return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
+	}, $sb->getFolders() ?? []));
+	$assetFoldersOptions = implode('', array_map(function ($item) {
+		return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
+	}, $sb->getAssetFolders() ?? []));
+	
+	set_transient('migrate_sb_options', [$postsOptions, $count, $foldersOptions, $assetFoldersOptions], DAY_IN_SECONDS);
+}
 
-$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
-$foldersOptions = implode('', array_map(function ($item) {
-	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
-}, $sb->getFolders() ?? []));
-$assetFoldersOptions = implode('', array_map(function ($item) {
-	return sprintf("<option value='%s'>%s</option>", $item['id'], $item['name']);
-}, $sb->getAssetFolders() ?? []));
+list($postsOptions, $count, $foldersOptions, $assetFoldersOptions) = $cache;
 ?>
 
 <div class="wrap">
@@ -40,7 +49,7 @@ $assetFoldersOptions = implode('', array_map(function ($item) {
 
 	<form target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
-			Posts (<?= count($posts) ?>)<br>
+			Posts (<?= $count ?>)<br>
 			<select name="posts[]" multiple size="20" required>
 				<?= $postsOptions ?>
 			</select>
