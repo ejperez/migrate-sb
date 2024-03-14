@@ -63,7 +63,7 @@ list($postsOptions, $count, $foldersOptions, $assetFoldersOptions) = $cache;
 		</p>
 
 		<p>
-			Storyblok folder<br>
+			Storyblok asset folder<br>
 			<select name="assetFolder" required>
 				<?= $assetFoldersOptions ?>
 			</select>

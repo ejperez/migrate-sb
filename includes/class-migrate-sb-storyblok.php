@@ -4,7 +4,6 @@ require __DIR__ . '/../vendor/autoload.php';
 require 'class-migrate-sb-mapper.php';
 
 use Storyblok\ManagementClient;
-use Storyblok\Client;
 
 class Migrate_Sb_Storyblok
 {
@@ -40,28 +39,20 @@ class Migrate_Sb_Storyblok
 			'posts' => [],
 			'type' => 'post',
 			'lang' => 'en',
-			'folder' => null
+			'folder' => null,
+			'assetFolder' => null
 		]);
 
 		if (!$args['folder'] || empty($args['posts']) || empty($args['assetFolder'])) {
 			throw new Exception('No Storyblok folder/asset folder or posts.');
 		}
 
-		$mapper = new Migrate_Sb_Mapper();
+		$mapper = new Migrate_Sb_Mapper($this->managementClient, $this->settings['space_id'], $args['assetFolder']);
 
 		foreach ($args['posts'] as $postId) {
 			$currentPost = get_post($postId);
-			$sbId = get_post_meta($postId, 'storyblok_id', true);
-			$existing = false;
 
 			echo "$currentPost->post_title ";
-
-			if ($sbId) {
-				try {
-					$existing = $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/stories/' . $sbId)->getBody();
-				} catch (Exception $exception) {
-				}
-			}
 
 			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections']);
 
@@ -75,33 +66,18 @@ class Migrate_Sb_Storyblok
 				]
 			];
 
-			if ($existing) {
-				try {
-					$this->managementClient->put(
-						'spaces/' . $this->settings['space_id'] . '/stories/' . $sbId,
-						['story' => $story]
-					)->getBody();
+			try {
+				$storyResult = $this->managementClient->post(
+					'spaces/' . $this->settings['space_id'] . '/stories/',
+					['story' => $story]
+				)->getBody();
 
-					echo "<span style='color:blue'>Updated $sbId!</span><br>";
-				} catch (Exception $exception) {
-					$message = $exception->getMessage();
-					echo "<span style='color:red'>$message</span><br>";
-				}
-			} else {
-				try {
-					$storyResult = $this->managementClient->post(
-						'spaces/' . $this->settings['space_id'] . '/stories/',
-						['story' => $story]
-					)->getBody();
+				$id = $storyResult['story']['id'];
 
-					$id = $storyResult['story']['id'];
-
-					echo "<span style='color:green'>Created $id!</span><br>";
-					update_post_meta($postId, 'storyblok_id', $id);
-				} catch (Exception $exception) {
-					$message = $exception->getMessage();
-					echo "<span style='color:red'>$message</span><br>";
-				}
+				echo "<span style='color:green'>Created $id!</span><br>";
+			} catch (Exception $exception) {
+				$message = $exception->getMessage();
+				echo "<span style='color:red'>$message</span><br>";
 			}
 		}
 	}
