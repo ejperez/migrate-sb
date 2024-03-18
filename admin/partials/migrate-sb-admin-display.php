@@ -20,9 +20,10 @@ if(!$cache || isset($_GET['nocache'])) {
 	$posts = get_posts([
 		'post_type' => 'post',
 		'posts_per_page' => -1,
+		'post_status' => 'publish',
 		'orderby' => 'post_title',
 		'order' => 'ASC',
-		'lang' => pll_current_language()
+		'lang' => pll_default_language()
 	]);
 	$count = count($posts);
 	
