@@ -40,6 +40,10 @@ class Migrate_Sb_Mapper
 						'heading' => $section['title'],
 						'content' => $editor->getDocument(),
 						'width' => 'w-full',
+						'backgroundColor' => [
+							'color' => $section['background_color'],
+							'plugin' => 'native-color-picker'
+						]
 					];
 
 					break;

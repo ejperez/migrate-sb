@@ -14,7 +14,9 @@ class Migrate_Sb_Storyblok
 	{
 		$this->settings = wp_parse_args($settings, [
 			'api_token' => null,
-			'space_id'
+			'space_id' => null,
+			'folder' => null,
+			'asset_folder' => null
 		]);
 
 		$this->managementClient = new ManagementClient($this->settings['api_token']);
@@ -22,44 +24,58 @@ class Migrate_Sb_Storyblok
 
 	public function getFolders()
 	{
-		return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/stories', [
-			'folder_only' => 1,
-			'sort_by' => 'name'
-		])->getBody()['stories'];
+		try {
+			return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/stories', [
+				'folder_only' => 1,
+				'sort_by' => 'name'
+			])->getBody()['stories'];
+		} catch (Exception $exception) {
+			return [];
+		}
 	}
 
 	public function getAssetFolders()
 	{
-		return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/asset_folders')->getBody()['asset_folders'];
+		try {
+			return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/asset_folders')->getBody()['asset_folders'];
+		} catch (Exception $exception) {
+			return [];
+		}
 	}
 
 	public function postStories($args)
 	{
 		$args = wp_parse_args($args, [
 			'posts' => [],
-			'type' => 'post',
-			'lang' => 'en',
-			'folder' => null,
-			'assetFolder' => null
+			'type' => 'post'
 		]);
 
-		if (!$args['folder'] || empty($args['posts']) || empty($args['assetFolder'])) {
-			throw new Exception('No Storyblok folder/asset folder or posts.');
+		if (empty ($args['posts'])) {
+			throw new Exception('No posts selected.');
 		}
 
-		$mapper = new Migrate_Sb_Mapper($this->managementClient, $this->settings['space_id'], $args['assetFolder']);
+		$mapper = new Migrate_Sb_Mapper($this->managementClient, $this->settings['space_id'], $this->settings['asset_folder']);
+		// $sections = [];
 
 		foreach ($args['posts'] as $postId) {
 			$currentPost = get_post($postId);
 
 			echo "$currentPost->post_title ";
 
+			// foreach (get_fields($postId)['sections'] as $section) {
+			// 	if (!isset ($sections[$section['acf_fc_layout']])) {
+			// 		$sections[$section['acf_fc_layout']] = 1;
+			// 	} else {
+			// 		$sections[$section['acf_fc_layout']]++;
+			// 	}
+			// }
+
 			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections']);
 
 			$story = [
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
-				"parent_id" => $args['folder'],
+				"parent_id" => $this->settings['folder'],
 				"content" => [
 					"component" => "page",
 					"body" => $blocks
@@ -80,5 +96,7 @@ class Migrate_Sb_Storyblok
 				echo "<span style='color:red'>$message</span><br>";
 			}
 		}
+
+		// print_r($sections);
 	}
 }
