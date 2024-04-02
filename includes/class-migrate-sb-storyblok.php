@@ -55,22 +55,13 @@ class Migrate_Sb_Storyblok
 		}
 
 		$mapper = new Migrate_Sb_Mapper($this->managementClient, $this->settings['space_id'], $this->settings['asset_folder']);
-		// $sections = [];
 
 		foreach ($args['posts'] as $postId) {
 			$currentPost = get_post($postId);
 
 			echo "$currentPost->post_title ";
 
-			// foreach (get_fields($postId)['sections'] as $section) {
-			// 	if (!isset ($sections[$section['acf_fc_layout']])) {
-			// 		$sections[$section['acf_fc_layout']] = 1;
-			// 	} else {
-			// 		$sections[$section['acf_fc_layout']]++;
-			// 	}
-			// }
-
-			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections']);
+			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections'], $postId);
 
 			$story = [
 				"name" => $currentPost->post_title,
@@ -81,6 +72,8 @@ class Migrate_Sb_Storyblok
 					"body" => $blocks
 				]
 			];
+
+			// j_dump($blocks);
 
 			try {
 				$storyResult = $this->managementClient->post(
@@ -96,7 +89,5 @@ class Migrate_Sb_Storyblok
 				echo "<span style='color:red'>$message</span><br>";
 			}
 		}
-
-		// print_r($sections);
 	}
 }

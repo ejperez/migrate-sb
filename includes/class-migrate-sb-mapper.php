@@ -15,9 +15,25 @@ class Migrate_Sb_Mapper
 		$this->assetFolder = $assetFolder;
 	}
 
-	public function mapSectionToBlocks($sections)
+	public function mapSectionToBlocks($sections, $postId)
 	{
 		$blocks = [];
+
+		// TODO: Blog header here
+
+		// Featured image
+		if (has_post_thumbnail($postId)) {
+			$uploadedImage = $this->uploadImage(get_post_thumbnail_id($postId));
+
+			$blocks[] = [
+				'component' => 'hero',
+				'image' => [
+					'id' => $uploadedImage['id'],
+					'filename' => $uploadedImage['filename'],
+					'fieldtype' => 'asset'
+				]
+			];
+		}
 
 		foreach ($sections as $section) {
 			switch ($section['acf_fc_layout']) {
@@ -53,16 +69,74 @@ class Migrate_Sb_Mapper
 					}
 
 					$uploadedImage = $this->uploadImage($section['images'][0]);
+					$mobileImage = [];
+
+					if (!empty($section['image_mobile'])) {
+						$uploadedMobileImage = $this->uploadImage($section['image_mobile'][0]);
+						$mobileImage = [
+							'id' => $uploadedMobileImage['id'],
+							'filename' => $uploadedMobileImage['filename'],
+							'fieldtype' => 'asset'
+						];
+					}
 
 					$blocks[] = [
-						'component' => 'wp-image',
+						'component' => 'hero',
 						'image' => [
 							'id' => $uploadedImage['id'],
 							'filename' => $uploadedImage['filename'],
 							'fieldtype' => 'asset'
-						]
+						],
+						'imageMobile' => $mobileImage
 					];
 
+					break;
+				case 'image-column-triple':
+					$items = [];
+
+					foreach ($section['items'] as $item) {
+						$uploadedImage = $this->uploadImage($item['image']);
+						$link = [];
+
+						if ($item['link']) {
+							$link = [
+								'url' => $item['link']['url'],
+								'linktype' => 'url',
+								'fieldtype' => 'multilink',
+                                'cached_url' => $item['link']['url'],
+								'target' => $item['link']['target']
+							];
+						}
+
+						$actionField = 'click_action_2';
+
+						if($section['mobile_display_option'] === 'horizontal') {
+							$actionField = 'click_action';
+						}
+
+						$items[] = [
+							'component' => 'triple-image-item',
+							'title' => $item['title'],
+							'image' => [
+								'id' => $uploadedImage['id'],
+								'filename' => $uploadedImage['filename'],
+								'fieldtype' => 'asset'
+							],
+							'link' => $link,
+							'textColor' => 'text-' . $item['text_color'],
+                            'clickAction' => $item[$actionField],
+                            'titlePosition' => $item['title_position']
+						];
+					}
+
+					$blocks[] = [
+						'component' => 'triple-image-block',
+						'items' => $items,
+						'displayOption' => $section['mobile_display_option']
+					];
+
+					break;
+				case 'popular-products':
 					break;
 			}
 		}
@@ -72,6 +146,8 @@ class Migrate_Sb_Mapper
 
 	private function uploadImage($imageId)
 	{
+		// return ['id' => 1, 'filename' => 'test.jpg'];
+
 		$image = wp_get_attachment_image_src($imageId, 'full');
 		$imagePath = wp_get_original_image_path($imageId);
 		$mime = mime_content_type($imagePath);
