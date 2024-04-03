@@ -13,7 +13,7 @@
  */
 $posts = get_posts([
 	'post_type' => 'post',
-	'posts_per_page' => -1,
+	'posts_per_page' => 1000,
 	'post_status' => 'publish',
 	'orderby' => 'post_title',
 	'order' => 'ASC',
@@ -34,6 +34,10 @@ $postsOptions = implode('', array_map(function ($item) {
 			<select name="posts[]" multiple size="35" required>
 				<?= $postsOptions ?>
 			</select>
+		</p>
+		<p>
+			Test mode<br>
+			<label for="test_mode"><input type="checkbox" name="test_mode" id="test_mode" value="1" checked> Yes</label>
 		</p>
 
 		<input type="hidden" name="action" value="do_sb_migration">

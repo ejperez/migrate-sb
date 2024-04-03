@@ -63,6 +63,11 @@ class Migrate_Sb_Storyblok
 
 			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections'], $postId);
 
+			if($GLOBALS['msb_test_mode'] ?? false) {
+				echo '<pre>'.json_encode($blocks, JSON_PRETTY_PRINT).'</pre>';
+				break;
+			}
+
 			$story = [
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
@@ -72,9 +77,7 @@ class Migrate_Sb_Storyblok
 					"body" => $blocks
 				]
 			];
-
-			// j_dump($blocks);
-
+		
 			try {
 				$storyResult = $this->managementClient->post(
 					'spaces/' . $this->settings['space_id'] . '/stories/',

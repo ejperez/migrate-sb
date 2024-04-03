@@ -23,15 +23,9 @@ class Migrate_Sb_Mapper
 
 		// Featured image
 		if (has_post_thumbnail($postId)) {
-			$uploadedImage = $this->uploadImage(get_post_thumbnail_id($postId));
-
 			$blocks[] = [
 				'component' => 'hero',
-				'image' => [
-					'id' => $uploadedImage['id'],
-					'filename' => $uploadedImage['filename'],
-					'fieldtype' => 'asset'
-				]
+				'image' => $this->mapImage(get_post_thumbnail_id($postId))
 			];
 		}
 
@@ -64,30 +58,10 @@ class Migrate_Sb_Mapper
 
 					break;
 				case 'image-full':
-					if (empty($section['images'])) {
-						break;
-					}
-
-					$uploadedImage = $this->uploadImage($section['images'][0]);
-					$mobileImage = [];
-
-					if (!empty($section['image_mobile'])) {
-						$uploadedMobileImage = $this->uploadImage($section['image_mobile'][0]);
-						$mobileImage = [
-							'id' => $uploadedMobileImage['id'],
-							'filename' => $uploadedMobileImage['filename'],
-							'fieldtype' => 'asset'
-						];
-					}
-
 					$blocks[] = [
 						'component' => 'hero',
-						'image' => [
-							'id' => $uploadedImage['id'],
-							'filename' => $uploadedImage['filename'],
-							'fieldtype' => 'asset'
-						],
-						'imageMobile' => $mobileImage
+						'image' => $this->mapImage($section['images'][0]),
+						'imageMobile' => empty($section['image_mobile']) ? [] : $this->mapImage($section['image_mobile'][0])
 					];
 
 					break;
@@ -95,37 +69,20 @@ class Migrate_Sb_Mapper
 					$items = [];
 
 					foreach ($section['items'] as $item) {
-						$uploadedImage = $this->uploadImage($item['image']);
-						$link = [];
-
-						if ($item['link']) {
-							$link = [
-								'url' => $item['link']['url'],
-								'linktype' => 'url',
-								'fieldtype' => 'multilink',
-                                'cached_url' => $item['link']['url'],
-								'target' => $item['link']['target']
-							];
-						}
-
 						$actionField = 'click_action_2';
 
-						if($section['mobile_display_option'] === 'horizontal') {
+						if ($section['mobile_display_option'] === 'horizontal') {
 							$actionField = 'click_action';
 						}
 
 						$items[] = [
 							'component' => 'triple-image-item',
 							'title' => $item['title'],
-							'image' => [
-								'id' => $uploadedImage['id'],
-								'filename' => $uploadedImage['filename'],
-								'fieldtype' => 'asset'
-							],
-							'link' => $link,
+							'image' => $this->mapImage($item['image']),
+							'link' => $item['link'] ? $this->mapLink($item['link']) : [],
 							'textColor' => 'text-' . $item['text_color'],
-                            'clickAction' => $item[$actionField],
-                            'titlePosition' => $item['title_position']
+							'clickAction' => $item[$actionField],
+							'titlePosition' => $item['title_position']
 						];
 					}
 
@@ -137,6 +94,40 @@ class Migrate_Sb_Mapper
 
 					break;
 				case 'popular-products':
+					$products = [];
+					$categories = [];
+					$translations = get_field('translate_selected_product', pll_default_language());
+
+					if ($section['section_displays'] === 'handpick') {
+						$products = [
+							'plugin' => 'centra-product-selector-new',
+							'selected' => array_map(function ($product) {
+								return get_post_meta($product->ID, 'product_id', true);
+							}, $section['handpicked_products'])
+						];
+					} else {
+						$categories = [
+							'plugin' => 'centra-category-selector-new',
+							'selected' => [$section['category'] ? get_term_meta($section['category'], 'category_id', true) : null]
+						];
+					}
+
+					$blocks[] = [
+						'title' => $section['header'],
+						'newLabel' => $translations['product_states']['new'] ?: 'NEW',
+						'preamble' => $section['text'],
+						'products' => $products,
+						'component' => 'product-slider',
+						'saleLabel' => $translations['product_states']['sale'] ?: 'SALE',
+						'categories' => $categories,
+						'showAsGrid' => $section['display_option'] === 'list',
+						'hideContent' => false,
+						'productsLimit' => $section['count'],
+						'slidesToScroll' => 4,
+						'productsInSlide' => 4,
+						'showProductsFromCategory' => $section['section_displays'] === 'category'
+					];
+
 					break;
 			}
 		}
@@ -144,9 +135,33 @@ class Migrate_Sb_Mapper
 		return $blocks;
 	}
 
+	private function mapLink($link)
+	{
+		return [
+			'url' => $link['url'],
+			'linktype' => 'url',
+			'fieldtype' => 'multilink',
+			'cached_url' => $link['url'],
+			'target' => $link['target']
+		];
+	}
+
+	private function mapImage($id)
+	{
+		$uploadedImage = $this->uploadImage($id);
+
+		return [
+			'id' => $uploadedImage['id'],
+			'filename' => $uploadedImage['filename'],
+			'fieldtype' => 'asset'
+		];
+	}
+
 	private function uploadImage($imageId)
 	{
-		// return ['id' => 1, 'filename' => 'test.jpg'];
+		if ($GLOBALS['msb_test_mode'] ?? false) {
+			return ['id' => 1, 'filename' => 'test.jpg'];
+		}
 
 		$image = wp_get_attachment_image_src($imageId, 'full');
 		$imagePath = wp_get_original_image_path($imageId);

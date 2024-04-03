@@ -145,6 +145,10 @@ class Migrate_Sb_Admin
 
 		ini_set('max_execution_time', PHP_INT_MAX);
 
+		if(isset($_POST['test_mode'])) {
+			$GLOBALS['msb_test_mode'] = true;
+		}
+
 		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
 
 		$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
