@@ -18,14 +18,40 @@ class Migrate_Sb_Mapper
 	public function mapSectionToBlocks($sections, $postId)
 	{
 		$blocks = [];
+		$currentPost = get_post($postId);
+		$categories = wp_get_post_categories($postId);
+		$tags = $categories ? array_map(function ($category) {
+			$category = get_term($category, 'category');
+			$link = get_term_link($category);
 
-		// TODO: Blog header here
+			return [
+				'link' => [
+					'url' => $link,
+					'linktype' => 'url',
+					'fieldtype' => 'multilink',
+					'cached_url' => $link
+				],
+				'label' => $category->name,
+				'component' => 'link',
+				'linkVariant' => ''
+			];
+		}, $categories) : [];
+
+		// Blog header
+		$blocks[] = [
+			'component' => 'tmp_blog_header',
+			'title' => $currentPost->post_title,
+			'publish_date' => date('Y-m-d h:m', strtotime($currentPost->post_date)),
+			'tags' => $tags,
+			'author' => get_field('author', $postId)
+		];
 
 		// Featured image
 		if (has_post_thumbnail($postId)) {
 			$blocks[] = [
 				'component' => 'hero',
-				'image' => $this->mapImage(get_post_thumbnail_id($postId))
+				'image' => $this->mapImage(get_post_thumbnail_id($postId)),
+				'description' => get_field('preamble', $postId)
 			];
 		}
 
