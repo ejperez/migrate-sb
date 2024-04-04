@@ -17,7 +17,7 @@ require __DIR__ . '/../../includes/class-migrate-sb-storyblok.php';
 $settings = get_option('migrate_sb_settings');
 
 if ($settings) {
-	$sb = new Migrate_Sb_Storyblok($settings);
+	$sb = new Migrate_Sb_Storyblok();
 	$foldersOptions = implode('', array_map(function ($item) use ($settings) {
 		return sprintf("<option value='%s' %s>%s</option>", $item['id'], $item['id'] === intval($settings['folder'] ?? null) ? 'selected' : '', $item['name']);
 	}, $sb->getFolders() ?? []));

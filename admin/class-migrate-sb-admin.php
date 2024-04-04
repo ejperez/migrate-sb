@@ -151,7 +151,7 @@ class Migrate_Sb_Admin
 
 		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
 
-		$sb = new Migrate_Sb_Storyblok(get_option('migrate_sb_settings'));
+		$sb = new Migrate_Sb_Storyblok();
 		$sb->postStories($_POST);
 
 		exit;

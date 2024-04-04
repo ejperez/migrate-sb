@@ -2,9 +2,9 @@
 
 require 'class-migrate-sb-mapper-factory.php';
 
-class Migrate_Sb_Mapper
+class Mapper
 {
-	public function mapSectionToBlocks($sections, $postId)
+	public static function mapSectionToBlocks($sections, $postId)
 	{
 		ModuleFactory::$currentPost = get_post($postId);
 

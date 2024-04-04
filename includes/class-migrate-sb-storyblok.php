@@ -10,26 +10,20 @@ class Migrate_Sb_Storyblok
 	private $managementClient;
 	private $settings;
 
-	public function __construct($settings)
+	public function __construct()
 	{
-		$this->settings = wp_parse_args($settings, [
-			'api_token' => null,
-			'space_id' => null,
-			'folder' => null,
-			'asset_folder' => null
-		]);
-
-		$this->managementClient = new ManagementClient($this->settings['api_token']);
+		$this->settings = (object) get_option('migrate_sb_settings');
+		$this->managementClient = new ManagementClient($this->settings->api_token);
 	}
 
 	public function getFolders()
 	{
 		try {
-			return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/stories', [
+			return $this->managementClient->get('spaces/' . $this->settings->space_id . '/stories', [
 				'folder_only' => 1,
 				'sort_by' => 'name'
 			])->getBody()['stories'];
-		} catch (Exception $exception) {
+		} catch (Exception $ex) {
 			return [];
 		}
 	}
@@ -37,8 +31,8 @@ class Migrate_Sb_Storyblok
 	public function getAssetFolders()
 	{
 		try {
-			return $this->managementClient->get('spaces/' . $this->settings['space_id'] . '/asset_folders')->getBody()['asset_folders'];
-		} catch (Exception $exception) {
+			return $this->managementClient->get('spaces/' . $this->settings->space_id . '/asset_folders')->getBody()['asset_folders'];
+		} catch (Exception $ex) {
 			return [];
 		}
 	}
@@ -50,37 +44,35 @@ class Migrate_Sb_Storyblok
 			'type' => 'post'
 		]);
 
-		if (empty ($args['posts'])) {
+		if (empty($args['posts'])) {
 			throw new Exception('No posts selected.');
 		}
-
-		$mapper = new Migrate_Sb_Mapper($this->managementClient, $this->settings['space_id'], $this->settings['asset_folder']);
 
 		foreach ($args['posts'] as $postId) {
 			$currentPost = get_post($postId);
 
 			echo "$currentPost->post_title ";
 
-			$blocks = $mapper->mapSectionToBlocks(get_fields($postId)['sections'], $postId);
+			$blocks = Mapper::mapSectionToBlocks(get_fields($postId)['sections'], $postId);
 
-			if($GLOBALS['msb_test_mode'] ?? false) {
-				echo '<pre>'.json_encode($blocks, JSON_PRETTY_PRINT).'</pre>';
+			if ($GLOBALS['msb_test_mode'] ?? false) {
+				echo '<pre>' . json_encode($blocks, JSON_PRETTY_PRINT) . '</pre>';
 				break;
 			}
 
 			$story = [
 				"name" => $currentPost->post_title,
 				"slug" => $currentPost->post_name,
-				"parent_id" => $this->settings['folder'],
+				"parent_id" => $this->settings->folder,
 				"content" => [
 					"component" => "page",
 					"body" => $blocks
 				]
 			];
-		
+
 			try {
 				$storyResult = $this->managementClient->post(
-					'spaces/' . $this->settings['space_id'] . '/stories/',
+					'spaces/' . $this->settings->space_id . '/stories/',
 					['story' => $story]
 				)->getBody();
 
