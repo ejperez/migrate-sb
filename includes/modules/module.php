@@ -5,15 +5,44 @@ use Storyblok\ManagementClient;
 class Module
 {
 	protected $data;
-	protected $currentPost;
+	protected $post;
+	protected $translations;
+	protected $block;
+	protected $component;
 
-	public function __construct(array $data, WP_Post $post)
+	public function __construct(array $data, WP_Post $post, array $translations)
 	{
 		$this->data = $data;
-		$this->currentPost = $post;
+		$this->post = $post;
+		$this->translations = $translations;
+		$this->block = ['component' => $this->component];
 	}
 
-	protected function mapImage($id)
+	protected function localizeSitewide(string $fieldName, callable $getValue)
+	{
+		foreach (array_keys(pll_the_languages(['raw' => true])) as $lang) {
+			if ($lang !== pll_default_language()) {
+				$fieldName = "{$fieldName}__i18n__{$lang}";
+			}
+
+			$this->block[$fieldName] = $getValue($lang);
+		}
+	}
+
+	protected function localizeField(string $fieldName, callable $getValue)
+	{
+		$this->block[$fieldName] = $getValue($this->post, $this->data);
+
+		if (empty($this->translations)) {
+			return;
+		}
+
+		foreach ($this->translations as $lang => $postSection) {
+			$this->block["{$fieldName}__i18n__{$lang}"] = $getValue($postSection['post'], $postSection['section']);
+		}
+	}
+
+	protected function mapImage($id): array
 	{
 		$uploadedImage = $this->uploadImage($id);
 
@@ -71,11 +100,12 @@ class Module
 		)->getBody();
 	}
 
-	/**
-	 * Child class should override this
-	 */
-	public function map(): array
+	public function getBlock(): array
 	{
-		return $this->data;
+		if (!$this->component) {
+			return [];
+		}
+
+		return $this->block;
 	}
 }

@@ -30,8 +30,8 @@ $postsOptions = implode('', array_map(function ($item) {
 
 	<form target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
-			Posts (<?= count($posts) ?>)<br>
-			<select name="posts[]" multiple size="35" required>
+			Post<br>
+			<select name="post" required>
 				<?= $postsOptions ?>
 			</select>
 		</p>

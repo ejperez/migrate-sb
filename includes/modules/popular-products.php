@@ -2,8 +2,11 @@
 
 class ModulePopularProducts extends Module
 {
-	public function map(): array
+	public function __construct(array $data, WP_Post $post, array $translations)
 	{
+		$this->component = 'product-slider';
+		parent::__construct($data, $post, $translations);
+
 		$products = [];
 		$categories = [];
 		$translations = get_field('translate_selected_product', pll_default_language());
@@ -22,13 +25,13 @@ class ModulePopularProducts extends Module
 			];
 		}
 
-		return [
-			'title' => $this->data['header'],
-			'newLabel' => $translations['product_states']['new'] ?: 'NEW',
-			'preamble' => $this->data['text'],
+		$this->block = array_merge($this->block, [
+			// 'title' => $this->data['header'],
+			// 'newLabel' => $translations['product_states']['new'] ?: 'NEW',
+			// 'preamble' => $this->data['text'],
 			'products' => $products,
-			'component' => 'product-slider',
-			'saleLabel' => $translations['product_states']['sale'] ?: 'SALE',
+			// 'component' => 'product-slider',
+			// 'saleLabel' => $translations['product_states']['sale'] ?: 'SALE',
 			'categories' => $categories,
 			'showAsGrid' => $this->data['display_option'] === 'list',
 			'hideContent' => false,
@@ -36,6 +39,26 @@ class ModulePopularProducts extends Module
 			'slidesToScroll' => 4,
 			'productsInSlide' => 4,
 			'showProductsFromCategory' => $this->data['section_displays'] === 'category'
-		];
+		]);
+
+		$this->localizeField('title', function ($post, $section) {
+			return $section['header'];
+		});
+
+		$this->localizeSitewide('newLabel', function ($lang) {
+			$translations = get_field('translate_selected_product', $lang);
+
+			return $translations['product_states']['new'] ?: 'NEW';
+		});
+
+		$this->localizeField('preamble', function ($post, $section) {
+			return $section['text'];
+		});
+
+		$this->localizeSitewide('saleLabel', function ($lang) {
+			$translations = get_field('translate_selected_product', $lang);
+
+			return $translations['product_states']['sale'] ?: 'SALE';
+		});
 	}
 }

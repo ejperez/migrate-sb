@@ -40,49 +40,50 @@ class Migrate_Sb_Storyblok
 	public function postStories($args)
 	{
 		$args = wp_parse_args($args, [
-			'posts' => [],
+			'post' => null,
 			'type' => 'post'
 		]);
 
-		if (empty($args['posts'])) {
-			throw new Exception('No posts selected.');
+		if (empty($args['post'])) {
+			throw new Exception('No post selected.');
 		}
 
-		foreach ($args['posts'] as $postId) {
-			$currentPost = get_post($postId);
+		$postId = $args['post'];
+		$post = get_post($postId);
 
-			echo "$currentPost->post_title ";
+		echo "$post->post_title ";
 
-			$blocks = Mapper::mapSectionToBlocks(get_fields($postId)['sections'], $postId);
+		$blocks = Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post);
 
-			if ($GLOBALS['msb_test_mode'] ?? false) {
-				echo '<pre>' . json_encode($blocks, JSON_PRETTY_PRINT) . '</pre>';
-				break;
-			}
+		if ($GLOBALS['msb_test_mode'] ?? false) {
+			echo '<pre>' . json_encode($blocks, JSON_PRETTY_PRINT) . '</pre>';
 
-			$story = [
-				"name" => $currentPost->post_title,
-				"slug" => $currentPost->post_name,
-				"parent_id" => $this->settings->folder,
-				"content" => [
-					"component" => "page",
-					"body" => $blocks
-				]
-			];
-
-			try {
-				$storyResult = $this->managementClient->post(
-					'spaces/' . $this->settings->space_id . '/stories/',
-					['story' => $story]
-				)->getBody();
-
-				$id = $storyResult['story']['id'];
-
-				echo "<span style='color:green'>Created $id!</span><br>";
-			} catch (Exception $exception) {
-				$message = $exception->getMessage();
-				echo "<span style='color:red'>$message</span><br>";
-			}
+			return;
 		}
+
+		$story = [
+			"name" => $post->post_title,
+			"slug" => $post->post_name,
+			"parent_id" => $this->settings->folder,
+			"content" => [
+				"component" => "page",
+				"body" => $blocks
+			]
+		];
+
+		try {
+			$storyResult = $this->managementClient->post(
+				'spaces/' . $this->settings->space_id . '/stories/',
+				['story' => $story]
+			)->getBody();
+
+			$id = $storyResult['story']['id'];
+
+			echo "<span style='color:green'>Created $id!</span><br>";
+		} catch (Exception $exception) {
+			$message = $exception->getMessage();
+			echo "<span style='color:red'>$message</span><br>";
+		}
+
 	}
 }

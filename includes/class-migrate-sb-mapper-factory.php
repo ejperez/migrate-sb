@@ -1,31 +1,68 @@
 <?php
 
-require_once('modules/module.php');
+require_once ('modules/module.php');
 
 class ModuleFactory
 {
-	public static ?WP_Post $currentPost = null;
+	private static ?WP_Post $post = null;
+	private static array $translations = [];
+
+	public static function setPost(WP_Post $post)
+	{
+		self::$post = $post;
+		self::$translations = [];
+
+		foreach (array_keys(pll_the_languages(['raw' => true])) as $language) {
+			if ($language === pll_default_language())
+				continue;
+
+			$translatedPost = get_post(pll_get_post($post->ID, $language));
+
+			if (!$translatedPost) {
+				continue;
+			}
+
+			self::$translations[$language] = [
+				'post' => $translatedPost,
+				'sections' => get_field('sections', $translatedPost->ID)
+			];
+		}
+	}
 
 	public static function build(string $moduleName, array $data): Module
 	{
 		$file = dirname(__FILE__) . "/modules/$moduleName.php";
 
 		if (!is_readable($file)) {
-			throw new Exception("File not found.");
+			throw new Exception("File not found: $file");
 		}
 
-		require_once($file);
+		require_once ($file);
 
 		$module = 'Module' . str_replace('-', '', ucwords($moduleName, '-'));
 
 		if (!class_exists($module)) {
-			throw new Exception("Invalid module type given.");
+			throw new Exception("Module class not found: $module");
 		}
 
-		if (self::$currentPost === null) {
+		if (self::$post === null) {
 			throw new Exception("Current post not provided.");
 		}
 
-		return new $module($data, self::$currentPost);
+		// Pass only the current section's fields
+		$currentTranslations = [];
+
+		foreach (self::$translations as $lang => $postSections) {
+			$filteredFields = array_filter($postSections['sections'], function ($section) use ($moduleName) {
+				return $section['acf_fc_layout'] === $moduleName;
+			});
+
+			$currentTranslations[$lang] = [
+				'post' => $postSections['post'],
+				'section' => empty($filteredFields) ? [] : reset($filteredFields)
+			];
+		}
+
+		return new $module($data, self::$post, $currentTranslations);
 	}
 }

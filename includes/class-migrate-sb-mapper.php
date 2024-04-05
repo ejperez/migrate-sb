@@ -4,19 +4,24 @@ require 'class-migrate-sb-mapper-factory.php';
 
 class Mapper
 {
-	public static function mapSectionToBlocks($sections, $postId)
+	public static function mapSectionsToBlocks(array $sections, WP_Post $post)
 	{
-		ModuleFactory::$currentPost = get_post($postId);
+		ModuleFactory::setPost($post);
 
-		$blocks = [(ModuleFactory::build('blog-header', []))->map()];
+		$fixedSections = [
+			['acf_fc_layout' => 'blog-header'],
+			['acf_fc_layout' => 'featured-image'],
+		];
 
-		if (has_post_thumbnail($postId)) {
-			$blocks[] = (ModuleFactory::build('featured-image', []))->map();
-		}
-
-		foreach ($sections as $section) {
+		foreach (array_merge($fixedSections, $sections) as $section) {
 			try {
-				$blocks[] = (ModuleFactory::build($section['acf_fc_layout'], $section))->map();
+				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();
+
+				if (empty($block)) {
+					continue;
+				}
+
+				$blocks[] = $block;
 			} catch (Exception $ex) {
 				continue;
 			}
