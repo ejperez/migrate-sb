@@ -26,12 +26,7 @@ class ModulePopularProducts extends Module
 		}
 
 		$this->block = array_merge($this->block, [
-			// 'title' => $this->data['header'],
-			// 'newLabel' => $translations['product_states']['new'] ?: 'NEW',
-			// 'preamble' => $this->data['text'],
 			'products' => $products,
-			// 'component' => 'product-slider',
-			// 'saleLabel' => $translations['product_states']['sale'] ?: 'SALE',
 			'categories' => $categories,
 			'showAsGrid' => $this->data['display_option'] === 'list',
 			'hideContent' => false,

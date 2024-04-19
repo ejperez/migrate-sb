@@ -56,7 +56,7 @@ class Module
 	private function uploadImage($imageId)
 	{
 		if ($GLOBALS['msb_test_mode'] ?? false) {
-			return ['id' => 1, 'filename' => 'test.jpg'];
+			return ['id' => $imageId, 'filename' => 'test.jpg'];
 		}
 
 		$settings = (object) get_option('migrate_sb_settings');
