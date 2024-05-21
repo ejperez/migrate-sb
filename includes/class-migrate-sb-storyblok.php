@@ -53,28 +53,32 @@ class Migrate_Sb_Storyblok
 
 		echo "$post->post_title ";
 
-		$blocks = Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post);
-
-		if ($GLOBALS['msb_test_mode'] ?? false) {
-			echo '<pre>' . json_encode($blocks, JSON_PRETTY_PRINT) . '</pre>';
-
-			return;
-		}
-
 		$story = [
-			"name" => $post->post_title,
-			"slug" => $post->post_name,
-			"parent_id" => $this->settings->folder,
-			"content" => [
-				"component" => "page",
-				"body" => $blocks
+			"story" => [
+				"name" => $post->post_title,
+				"slug" => $post->post_name,
+				"parent_id" => $this->settings->folder,
+				"content" => array_merge(
+					Mapper::mapComponent($post),
+					[
+						"body" =>
+							array_merge(
+								[["component" => "blogPage"]],
+								Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post)
+							)
+					]
+				)
 			]
 		];
+
+		if ($GLOBALS['msb_test_mode'] ?? false) {
+			die('<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>');
+		}
 
 		try {
 			$storyResult = $this->managementClient->post(
 				'spaces/' . $this->settings->space_id . '/stories/',
-				['story' => $story]
+				$story
 			)->getBody();
 
 			$id = $storyResult['story']['id'];

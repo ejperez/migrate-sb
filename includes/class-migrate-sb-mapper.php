@@ -8,12 +8,7 @@ class Mapper
 	{
 		ModuleFactory::setPost($post);
 
-		$fixedSections = [
-			['acf_fc_layout' => 'blog-header'],
-			['acf_fc_layout' => 'featured-image'],
-		];
-
-		foreach (array_merge($fixedSections, $sections) as $section) {
+		foreach ($sections as $section) {
 			try {
 				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();
 
@@ -28,5 +23,12 @@ class Mapper
 		}
 
 		return $blocks;
+	}
+
+	public static function mapComponent(WP_Post $post)
+	{
+		ModuleFactory::setPost($post);
+
+		return (ModuleFactory::build('blog-page', []))->getBlock();
 	}
 }
