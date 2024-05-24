@@ -54,22 +54,51 @@ class Migrate_Sb_Storyblok
 		echo "$post->post_title ";
 
 		$story = [
-			"story" => [
-				"name" => $post->post_title,
-				"slug" => $post->post_name,
-				"parent_id" => $this->settings->folder,
-				"content" => array_merge(
+			'story' => [
+				'name' => $post->post_title,
+				'slug' => $post->post_name,
+				'parent_id' => $this->settings->folder,
+				'translated_slugs' => [],
+				'tag_list' => [$post->post_name],
+				'localized_paths' => [],
+				'content' => array_merge(
 					Mapper::mapComponent($post),
 					[
-						"body" =>
+						'body' =>
 							array_merge(
-								[["component" => "blogPage"]],
+								[['component' => 'blogPage']],
 								Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post)
 							)
 					]
 				)
 			]
 		];
+
+		foreach (array_keys(pll_the_languages(['raw' => true])) as $language) {			
+			if ($language === pll_default_language())
+				continue;
+
+			$translatedPost = get_post(pll_get_post($post->ID, $language));
+
+			if (!$translatedPost) {
+				continue;
+			}
+
+			$story['story']['translated_slugs'][] = [
+				'lang' => $language,
+				'slug' => $translatedPost->post_name,
+				'name' => $translatedPost->post_name,
+				'published' => false,
+			];
+
+			$story['story']['localized_paths'][] = [
+				'lang' => $language,
+				'name' => $translatedPost->post_name,
+				'published' => false,
+			];
+
+			$story['story']['tag_list'][] = $translatedPost->post_name;
+		}
 
 		if ($GLOBALS['msb_test_mode'] ?? false) {
 			die('<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>');
