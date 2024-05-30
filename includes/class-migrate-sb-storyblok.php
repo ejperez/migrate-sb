@@ -104,6 +104,8 @@ class Migrate_Sb_Storyblok
 			die('<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>');
 		}
 
+		echo '<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>';
+
 		try {
 			$storyResult = $this->managementClient->post(
 				'spaces/' . $this->settings->space_id . '/stories/',

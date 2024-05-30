@@ -42,7 +42,7 @@ class Module
 		}
 	}
 
-	protected function mapImage($id): array
+	protected function mapImage(int $id): array
 	{
 		$uploadedImage = $this->uploadImage($id);
 
@@ -53,10 +53,12 @@ class Module
 		];
 	}
 
-	private function uploadImage($imageId)
-	{
+	private function uploadImage(int $imageId)
+	{		
+		$image = wp_get_attachment_image_src($imageId, 'full');
+
 		if ($GLOBALS['msb_test_mode'] ?? false) {
-			return ['id' => $imageId, 'filename' => 'test.jpg'];
+			return ['id' => $imageId, 'filename' => $image[0]];
 		}
 
 		$settings = (object) get_option('migrate_sb_settings');

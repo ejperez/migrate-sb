@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../vendor/autoload.php';
+require_once 'image-full.php';
 
 class ModuleTextEditor extends Module
 {
@@ -38,6 +39,7 @@ class ModuleTextEditor extends Module
 			return $editor->getDocument();
 		});
 	}
+
 	private function camelToSnake($camelCase)
 	{
 		$result = '';
@@ -53,5 +55,73 @@ class ModuleTextEditor extends Module
 		}
 
 		return ltrim($result, '_');
+	}
+
+	private static function getImageFullURL($input)
+	{
+		$splitted = explode('-', $input);
+		$lastItem = array_pop($splitted);
+
+		if (strpos($lastItem, 'x') === false) {
+			return $input;
+		}
+
+		$splitted2 = explode('.', $lastItem);
+		array_shift($splitted2);
+
+		return implode('-', $splitted) . '.' . reset($splitted2);
+	}
+
+	public static function splitImages($block)
+	{
+		if (!isset($block['content']) || !isset($block['content']['content'])) {
+			return $block;
+		}
+
+		$output = [];
+		$currentContent = [];
+		$removeHeading = false;
+
+		foreach ($block['content']['content'] as $index => $content) {
+			if (!isset($content['content'])) {
+				continue;
+			}
+
+			$containsImage = count(array_filter($content['content'], function ($content) {
+				return $content['type'] === 'image';
+			})) > 0;
+
+			if ($containsImage || count($block['content']['content']) - 1 === $index) {
+				$currentBlock = $block;
+				$currentBlock['content']['content'] = $currentContent;
+
+				if (count($block['content']['content']) - 1 === $index && !$containsImage) {
+					$currentBlock['content']['content'] = empty($currentContent) ? [$content] : array_merge($currentContent, [$content]);
+				}
+
+				if ($removeHeading) {
+					unset($currentBlock['heading']);
+				}
+
+				$output[] = $currentBlock;
+				$removeHeading = true;
+
+				if ($containsImage) {
+					$currentContent = [];
+					$id = attachment_url_to_postid(self::getImageFullURL($content['content'][0]['attrs']['src']));
+
+					if ($id !== 0) {
+						$output[] = (new ModuleImageFull([
+							'images' => [$id],
+							'image_mobile' => [$id]
+						], get_post($id), []))->getBlock();
+					}
+				}
+			} else {
+				$currentContent[] = $content;
+			}
+		}
+
+		return $output;
 	}
 }

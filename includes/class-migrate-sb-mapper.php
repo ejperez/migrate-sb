@@ -8,6 +8,8 @@ class Mapper
 	{
 		ModuleFactory::setPost($post);
 
+		$blocks = [];
+
 		foreach ($sections as $section) {
 			try {
 				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();
@@ -16,7 +18,12 @@ class Mapper
 					continue;
 				}
 
-				$blocks[] = $block;
+				if ($section['acf_fc_layout'] === 'text-editor') {
+					$output = ModuleTextEditor::splitImages($block);
+					$blocks = array_merge($blocks, $output);
+				} else {
+					$blocks[] = $block;
+				}
 			} catch (Exception $ex) {
 				continue;
 			}

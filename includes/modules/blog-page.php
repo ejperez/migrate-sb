@@ -33,6 +33,6 @@ class ModuleBlogPage extends Module
 			return get_field('author', $post->ID);
 		});
 
-		$this->block['thumbnail'] = $this->mapImage(get_post_thumbnail_id($post->ID));
+		$this->block['thumbnail'] = has_post_thumbnail($post->ID) ? $this->mapImage(get_post_thumbnail_id($post->ID)) : [];
 	}
 }
