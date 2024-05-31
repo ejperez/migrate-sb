@@ -48,7 +48,7 @@ class Module
 
 		return [
 			'id' => $uploadedImage['id'],
-			'filename' => $uploadedImage['filename'],
+			'filename' => str_replace('s3.amazonaws.com/', '', $uploadedImage['filename']),
 			'fieldtype' => 'asset'
 		];
 	}

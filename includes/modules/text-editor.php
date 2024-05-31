@@ -74,6 +74,8 @@ class ModuleTextEditor extends Module
 
 	public static function splitImages($block)
 	{
+		// echo '<pre>' . json_encode($block['content']['content'], JSON_PRETTY_PRINT) . '</pre>';
+
 		if (!isset($block['content']) || !isset($block['content']['content'])) {
 			return $block;
 		}
@@ -108,7 +110,15 @@ class ModuleTextEditor extends Module
 
 				if ($containsImage) {
 					$currentContent = [];
-					$id = attachment_url_to_postid(self::getImageFullURL($content['content'][0]['attrs']['src']));
+					$imagePath = self::getImageFullURL($content['content'][0]['attrs']['src']);
+					$id = attachment_url_to_postid($imagePath);
+
+					// Try adding "-scaled" to image path
+					if ($id === 0) {
+						$index = strrpos($imagePath, '.');
+						$imagePath = substr($imagePath, 0, $index) . '-scaled' . substr($imagePath, $index);
+						$id = attachment_url_to_postid($imagePath);
+					}
 
 					if ($id !== 0) {
 						$output[] = (new ModuleImageFull([
