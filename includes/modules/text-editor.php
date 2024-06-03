@@ -72,10 +72,17 @@ class ModuleTextEditor extends Module
 		return implode('-', $splitted) . '.' . reset($splitted2);
 	}
 
+	private static function getDivider()
+	{
+		return [
+			'component' => 'divider',
+			'heightMobile' => 24,
+			'heightDesktop' => 32
+		];
+	}
+
 	public static function splitImages($block)
 	{
-		// echo '<pre>' . json_encode($block['content']['content'], JSON_PRETTY_PRINT) . '</pre>';
-
 		if (!isset($block['content']) || !isset($block['content']['content'])) {
 			return $block;
 		}
@@ -105,6 +112,7 @@ class ModuleTextEditor extends Module
 					unset($currentBlock['heading']);
 				}
 
+				$output[] = self::getDivider();
 				$output[] = $currentBlock;
 				$removeHeading = true;
 
@@ -121,6 +129,7 @@ class ModuleTextEditor extends Module
 					}
 
 					if ($id !== 0) {
+						$output[] = self::getDivider();
 						$output[] = (new ModuleImageFull([
 							'images' => [$id],
 							'image_mobile' => [$id]
@@ -131,6 +140,8 @@ class ModuleTextEditor extends Module
 				$currentContent[] = $content;
 			}
 		}
+
+		$output[] = self::getDivider();
 
 		return $output;
 	}
