@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once 'image-full.php';
+require_once 'blog-image.php';
 
 class ModuleTextEditor extends Module
 {
@@ -11,16 +11,11 @@ class ModuleTextEditor extends Module
 		parent::__construct($data, $post, $translations);
 
 		$this->block = array_merge($this->block, [
-			'width' => 'w-full',
 			'backgroundColor' => [
 				'color' => $this->data['background_color'],
 				'plugin' => 'native-color-picker'
 			]
 		]);
-
-		$this->localizeField('heading', function ($post, $section) {
-			return $section['title'];
-		});
 
 		$this->localizeField('content', function ($post, $section) {
 			$editor = new Tiptap\Editor([
@@ -112,7 +107,10 @@ class ModuleTextEditor extends Module
 					unset($currentBlock['heading']);
 				}
 
-				$output[] = self::getDivider();
+				if (!empty($output)) {
+					$output[] = self::getDivider();
+				}
+
 				$output[] = $currentBlock;
 				$removeHeading = true;
 
@@ -129,19 +127,17 @@ class ModuleTextEditor extends Module
 					}
 
 					if ($id !== 0) {
-						$output[] = self::getDivider();
-						$output[] = (new ModuleImageFull([
-							'images' => [$id],
-							'image_mobile' => [$id]
-						], get_post($id), []))->getBlock();
+						if (!empty($output)) {
+							$output[] = self::getDivider();
+						}
+
+						$output[] = (new ModuleBlogImage(['image' => $id], get_post($id), []))->getBlock();
 					}
 				}
 			} else {
 				$currentContent[] = $content;
 			}
 		}
-
-		$output[] = self::getDivider();
 
 		return $output;
 	}
