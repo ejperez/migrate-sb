@@ -84,9 +84,9 @@ class ModuleTextEditor extends Module
 
 		$output = [];
 		$currentContent = [];
-		$removeHeading = false;
 
 		foreach ($block['content']['content'] as $index => $content) {
+
 			if (!isset($content['content'])) {
 				continue;
 			}
@@ -103,16 +103,13 @@ class ModuleTextEditor extends Module
 					$currentBlock['content']['content'] = empty($currentContent) ? [$content] : array_merge($currentContent, [$content]);
 				}
 
-				if ($removeHeading) {
-					unset($currentBlock['heading']);
-				}
-
 				if (!empty($output)) {
 					$output[] = self::getDivider();
 				}
 
-				$output[] = $currentBlock;
-				$removeHeading = true;
+				if (!empty($currentBlock['content']['content'])) {
+					$output[] = $currentBlock;
+				}
 
 				if ($containsImage) {
 					$currentContent = [];
