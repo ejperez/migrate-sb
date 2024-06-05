@@ -67,9 +67,13 @@ class ModuleTextEditor extends Module
 		return implode('-', $splitted) . '.' . reset($splitted2);
 	}
 
-	private static function getDivider()
+	private static function addDivider(&$output)
 	{
-		return [
+		if (empty($output)) {
+			return;
+		}
+
+		$output[] = [
 			'component' => 'divider',
 			'heightMobile' => 24,
 			'heightDesktop' => 32
@@ -95,47 +99,52 @@ class ModuleTextEditor extends Module
 				return $content['type'] === 'image';
 			})) > 0;
 
-			if ($containsImage || count($block['content']['content']) - 1 === $index) {
-				$currentBlock = $block;
-				$currentBlock['content']['content'] = $currentContent;
-
-				if (count($block['content']['content']) - 1 === $index && !$containsImage) {
-					$currentBlock['content']['content'] = empty($currentContent) ? [$content] : array_merge($currentContent, [$content]);
-				}
-
-				if (!empty($output)) {
-					$output[] = self::getDivider();
-				}
-
-				if (!empty($currentBlock['content']['content'])) {
-					$output[] = $currentBlock;
-				}
-
-				if ($containsImage) {
-					$currentContent = [];
-					$imagePath = self::getImageFullURL($content['content'][0]['attrs']['src']);
-					$id = attachment_url_to_postid($imagePath);
-
-					// Try adding "-scaled" to image path
-					if ($id === 0) {
-						$index = strrpos($imagePath, '.');
-						$imagePath = substr($imagePath, 0, $index) . '-scaled' . substr($imagePath, $index);
-						$id = attachment_url_to_postid($imagePath);
-					}
-
-					if ($id !== 0) {
-						if (!empty($output)) {
-							$output[] = self::getDivider();
-						}
-
-						$output[] = (new ModuleBlogImage(['image' => $id], get_post($id), []))->getBlock();
-					}
-				}
-			} else {
+			if (!$containsImage && count($block['content']['content']) - 1 > $index) {
 				$currentContent[] = $content;
+
+				continue;
+			}
+
+			$currentBlock = $block;
+			$currentBlock['content']['content'] = $currentContent;
+
+			if (count($block['content']['content']) - 1 === $index && !$containsImage) {
+				$currentBlock['content']['content'] = empty($currentContent) ? [$content] : array_merge($currentContent, [$content]);
+			}
+
+			self::addDivider($output);
+
+			if (!empty($currentBlock['content']['content'])) {
+				$output[] = $currentBlock;
+			}
+
+			if ($containsImage) {
+				$currentContent = [];
+				self::addBlockImage($output, $content);
 			}
 		}
 
 		return $output;
+	}
+
+	private static function addBlockImage(&$output, $content)
+	{
+		$imagePath = self::getImageFullURL($content['content'][0]['attrs']['src']);
+		$id = attachment_url_to_postid($imagePath);
+
+		// Try adding "-scaled" to image path
+		if ($id === 0) {
+			$index = strrpos($imagePath, '.');
+			$imagePath = substr($imagePath, 0, $index) . '-scaled' . substr($imagePath, $index);
+			$id = attachment_url_to_postid($imagePath);
+		}
+
+		if ($id === 0) {
+			return;
+		}
+
+		self::addDivider($output);
+
+		$output[] = (new ModuleBlogImage(['image' => $id], get_post($id), []))->getBlock();
 	}
 }
