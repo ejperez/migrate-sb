@@ -110,4 +110,15 @@ class Module
 
 		return $this->block;
 	}
+
+	protected function mapLink($link)
+	{
+		return [
+			'url' => $link['url'],
+			'linktype' => 'url',
+			'fieldtype' => 'multilink',
+			'cached_url' => $link['url'],
+			'target' => $link['target']
+		];
+	}
 }
