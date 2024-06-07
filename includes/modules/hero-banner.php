@@ -7,8 +7,6 @@ class ModuleHeroBanner extends Module
 		$this->component = 'hero';
 		parent::__construct($data, $post, $translations);
 
-		// echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
-
 		if ($data['video_url']) {
 			$this->block['vimeoId'] = substr($data['video_url'], strrpos($data['video_url'], '/') + 1);
 		}
