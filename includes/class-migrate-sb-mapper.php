@@ -12,7 +12,8 @@ class Mapper
 
 		foreach ($sections as $section) {
 			try {
-				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();
+				// echo $section['acf_fc_layout'];
+				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();				
 
 				if (empty($block)) {
 					continue;
