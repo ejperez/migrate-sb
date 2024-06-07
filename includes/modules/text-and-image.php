@@ -7,8 +7,6 @@ class ModuleTextAndImage extends Module
 		$this->component = 'promo-50';
 		parent::__construct($data, $post, $translations);
 
-		// echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
-
 		$this->localizeField('title', function ($post, $data) {
 			return $data['section_title'];
 		});
