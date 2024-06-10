@@ -7,8 +7,6 @@ class ModuleHeroBannerFifty extends Module
 		$this->component = 'hero-50';
 		parent::__construct($data, $post, $translations);
 
-		// echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
-
 		$this->localizeFields(0);
 
 		if (count($data['content']) > 1) {
@@ -35,41 +33,48 @@ class ModuleHeroBannerFifty extends Module
 			$this->block['image' . $placement . 'Mobile'] = $this->mapImage($content->image_mobile);
 		}
 
-		$url = '';
+		$this->localizeField('button' . $placement, function ($post, $data) use ($index) {
+			$content = (object) $data['content'][$index];
+			$url = '';
 
-		if ($content->link_type === 'product-category') {
-			$url = get_term_link($content->link_product_category);
-		} elseif ($content->link_type === 'post') {
-			$url = get_permalink($content->link_post);
-		} elseif ($content->link_type === 'url') {
-			$url = $content->link_url;
-		}
+			if ($content->link_type === 'product-category') {
+				$url = get_term_link($content->link_product_category);
+			} elseif ($content->link_type === 'post') {
+				$url = get_permalink($content->link_post);
+			} elseif ($content->link_type === 'url') {
+				$url = $content->link_url;
+			}
 
-		$this->block['button' . $placement] = [
-			[
-				'link' => [
-					'url' => $url,
-					'linktype' => 'url',
-					'fieldtype' => 'multilink',
-					'cached_url' => $url
-				],
-				'label' => $content->link_text,
-				'component' => 'button',
-				'buttonVariant' => 'button-primary'
-			]
-		];
-
-		$this->block['description' . $placement] = [
-			'type' => 'doc',
-			'content' => [
+			return [
 				[
-					'type' => 'paragraph',
-					'content' => [
-						'text' => $content->sub_text,
-						'type' => 'text'
+					'link' => [
+						'url' => $url,
+						'linktype' => 'url',
+						'fieldtype' => 'multilink',
+						'cached_url' => $url
+					],
+					'label' => $content->link_text,
+					'component' => 'button',
+					'buttonVariant' => 'button-primary'
+				]
+			];
+		});
+
+		$this->localizeField('description' . $placement, function ($post, $data) use ($index) {
+			return [
+				'type' => 'doc',
+				'content' => [
+					[
+						'type' => 'paragraph',
+						'content' => [
+							[
+								'text' => $data['content'][$index]['sub_text'],
+								'type' => 'text'
+							]
+						]
 					]
 				]
-			]
-		];
+			];
+		});
 	}
 }
