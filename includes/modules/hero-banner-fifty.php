@@ -7,64 +7,69 @@ class ModuleHeroBannerFifty extends Module
 		$this->component = 'hero-50';
 		parent::__construct($data, $post, $translations);
 
-		echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
+		// echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
 
-		// if ($data['video_url']) {
-		// 	$this->block['vimeoId'] = substr($data['video_url'], strrpos($data['video_url'], '/') + 1);
-		// }
+		$this->localizeFields(0);
 
-		// $this->block['horizontalAligment'] = $data['content_position'];
+		if (count($data['content']) > 1) {
+			$this->localizeFields(1);
+		}
+	}
 
-		// $this->localizeField('description', function ($post, $data) {
-		// 	return $data['sub_text'];
-		// });
+	private function localizeFields($index)
+	{
+		$placement = $index === 0 ? 'Left' : 'Right';
+		$content = (object) $this->data['content'][$index];
 
-		// $this->localizeField('title', function ($post, $data) {
-		// 	return $data['section_title'];
-		// });
+		$this->localizeField('title' . $placement, function ($post, $data) use ($index) {
+			return $data['content'][$index]['section_title'];
+		});
 
-		// if ($data['image']) {
-		// 	$image = $this->mapImage($data['image']);
-		// 	$this->block['image'] = $image;
-		// 	$this->block['imageMobile'] = $image;
-		// }
+		if ($content->image) {
+			$image = $this->mapImage($content->image);
+			$this->block['image' . $placement] = $image;
+			$this->block['image' . $placement . 'Mobile'] = $image;
+		}
 
-		// if ($data['image_mobile'] && $data['image'] !== $data['image_mobile']) {
-		// 	$this->block['imageMobile'] = $this->mapImage($data['image_mobile']);
-		// }
+		if ($content->image_mobile && $content->image !== $content->image_mobile) {
+			$this->block['image' . $placement . 'Mobile'] = $this->mapImage($content->image_mobile);
+		}
 
-		// $this->localizeField('buttons', function ($post, $data) {
-		// 	if (empty($data['button'])) {
-		// 		return [];
-		// 	}
+		$url = '';
 
-		// 	$buttons = [];
+		if ($content->link_type === 'product-category') {
+			$url = get_term_link($content->link_product_category);
+		} elseif ($content->link_type === 'post') {
+			$url = get_permalink($content->link_post);
+		} elseif ($content->link_type === 'url') {
+			$url = $content->link_url;
+		}
 
-		// 	foreach ($data['button'] as $button) {
-		// 		$url = '';
+		$this->block['button' . $placement] = [
+			[
+				'link' => [
+					'url' => $url,
+					'linktype' => 'url',
+					'fieldtype' => 'multilink',
+					'cached_url' => $url
+				],
+				'label' => $content->link_text,
+				'component' => 'button',
+				'buttonVariant' => 'button-primary'
+			]
+		];
 
-		// 		if ($button['link_type'] === 'product-category') {
-		// 			$url = get_term_link($button['link_product_category']);
-		// 		} elseif ($button['link_type'] === 'post') {
-		// 			$url = get_permalink($button['link_post']);
-		// 		} elseif ($button['link_type'] === 'url') {
-		// 			$url = $button['link_url'];
-		// 		}
-
-		// 		$buttons[] = [
-		// 			'link' => [
-		// 				'url' => $url,
-		// 				'linktype' => 'url',
-		// 				'fieldtype' => 'multilink',
-		// 				'cached_url' => $url,
-		// 			],
-		// 			'label' => $button['link_text'],
-		// 			'component' => 'button',
-		// 			'buttonVariant' => 'button-primary'
-		// 		];
-		// 	}
-
-		// 	return $buttons;
-		// });
+		$this->block['description' . $placement] = [
+			'type' => 'doc',
+			'content' => [
+				[
+					'type' => 'paragraph',
+					'content' => [
+						'text' => $content->sub_text,
+						'type' => 'text'
+					]
+				]
+			]
+		];
 	}
 }
