@@ -44,17 +44,29 @@ class Module
 
 	protected function mapImage(int $id): array
 	{
-		$uploadedImage = $this->uploadImage($id);
+		$imageCache = get_option('sb_image_cache', []);
 
-		return [
+		if ($imageCache) {
+			$cache = $imageCache[$id] ?? null;
+
+			if ($cache) {
+				return $cache;
+			}
+		}
+
+		$uploadedImage = $this->uploadImage($id);
+		$imageCache[$id] = [
 			'id' => $uploadedImage['id'],
 			'filename' => str_replace('s3.amazonaws.com/', '', $uploadedImage['filename']),
 			'fieldtype' => 'asset'
 		];
+		update_option('sb_image_cache', $imageCache);
+
+		return $imageCache[$id];
 	}
 
 	private function uploadImage(int $imageId)
-	{		
+	{
 		$image = wp_get_attachment_image_src($imageId, 'full');
 
 		if ($GLOBALS['msb_test_mode'] ?? false) {

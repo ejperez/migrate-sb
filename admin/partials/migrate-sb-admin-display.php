@@ -23,6 +23,12 @@ $posts = get_posts([
 $postsOptions = implode('', array_map(function ($item) {
 	return "<option value='$item->ID'>$item->post_title</option>";
 }, $posts ?? []));
+
+if (isset($_GET['clear_image_cache'])) {
+	update_option('sb_image_cache', []);
+}
+
+$imageCache = get_option('sb_image_cache', []);
 ?>
 
 <div class="wrap">
@@ -41,4 +47,11 @@ $postsOptions = implode('', array_map(function ($item) {
 		</p>
 		<button class="button button-primary" type="submit">Submit</button>
 	</form>
+
+	<br>
+
+	<div>
+		<?= count($imageCache) ?> item(s) in cache. <a href="<?= $_SERVER['REQUEST_URI'] ?>&clear_image_cache=1">Clear
+			image cache</a>
+	</div>
 </div>

@@ -50,9 +50,9 @@ class Migrate_Sb_Storyblok
 
 		$postId = $args['post'];
 		$post = get_post($postId);
+		$isSuccess = true;
 
 		ob_start();
-		echo "$post->post_title ";
 
 		$story = [
 			'story' => [
@@ -106,15 +106,13 @@ class Migrate_Sb_Storyblok
 			return compact('story', 'body');
 		}
 
-		$isSuccess = true;
-
 		try {
 			$storyResult = $this->managementClient->post(
 				'spaces/' . $this->settings->space_id . '/stories/',
 				$story
 			)->getBody();
 
-			echo $storyResult['story']['id'];
+			echo 'Storyblok ID: ' . $storyResult['story']['id'];
 		} catch (Exception $exception) {
 			echo $exception->getMessage();
 			$isSuccess = false;
