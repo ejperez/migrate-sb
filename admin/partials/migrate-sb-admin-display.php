@@ -28,10 +28,10 @@ $postsOptions = implode('', array_map(function ($item) {
 <div class="wrap">
 	<h1>Migrate SB</h1>
 
-	<form target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
+	<form id="js-migrate-sb-form" target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
 			Post<br>
-			<select name="post" required>
+			<select name="posts" required multiple size="20">
 				<?= $postsOptions ?>
 			</select>
 		</p>
@@ -39,10 +39,6 @@ $postsOptions = implode('', array_map(function ($item) {
 			Test mode<br>
 			<label for="test_mode"><input type="checkbox" name="test_mode" id="test_mode" value="1" checked> Yes</label>
 		</p>
-
-		<input type="hidden" name="action" value="do_sb_migration">
-		<input type="hidden" name="lang" value="<?= pll_current_language() ?>">
-		<input type="hidden" name="type" value="post">
 		<button class="button button-primary" type="submit">Submit</button>
 	</form>
 </div>

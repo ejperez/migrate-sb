@@ -7,8 +7,6 @@ class ModuleTriplePromoImages extends Module
 		$this->component = 'promoTriple';
 		parent::__construct($data, $post, $translations);
 
-		// echo '<pre>' . json_encode($data, JSON_PRETTY_PRINT) . '</pre>';
-
 		$this->block['removeSpaceTop'] = count(array_filter($data['custom_margin_and_padding'], function ($item) {
 			return $item['value'] === 'no_desktop_top';
 		})) > 0;

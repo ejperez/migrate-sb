@@ -28,7 +28,9 @@ class ModuleTextEditor extends Module
 			]);
 
 			$editor->descendants(function (&$node) {
-				$node->type = $this->camelToSnake($node->type);
+				if($node) {
+					$node->type = $this->camelToSnake($node->type);
+				}				
 			});
 
 			return $editor->getDocument();

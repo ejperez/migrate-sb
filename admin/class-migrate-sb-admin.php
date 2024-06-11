@@ -57,6 +57,20 @@ class Migrate_Sb_Admin
 		add_action('admin_init', function () {
 			register_setting('migrate_sb_settings_group', 'migrate_sb_settings');
 		});
+
+		add_action('rest_api_init', function () {
+			register_rest_route(
+				'migrate-sb',
+				'/migrate/(?P<id>[\d]+)',
+				[
+					[
+						'methods' => WP_REST_Server::CREATABLE,
+						'callback' => [$this, 'process_migration'],
+						'permission_callback' => '__return_true'
+					],
+				]
+			);
+		});
 	}
 
 	/**
@@ -137,22 +151,26 @@ class Migrate_Sb_Admin
 		include 'partials/migrate-sb-admin-display.php';
 	}
 
-	public function process_migration()
+	public function process_migration(\WP_REST_Request $request)
 	{
-		if (!isset($_POST['action']) || (isset($_POST['action']) && $_POST['action'] !== 'do_sb_migration')) {
-			return;
+		if (!$request->has_param('id')) {
+			wp_send_json_error('Invalid request', 400);
 		}
 
 		ini_set('max_execution_time', PHP_INT_MAX);
-
-		if(isset($_POST['test_mode'])) {
-			$GLOBALS['msb_test_mode'] = true;
-		}
+		$data = json_decode(file_get_contents('php://input'), true);
+		$GLOBALS['msb_test_mode'] = isset($data['test_mode']) && $data['test_mode'] === '1';
 
 		require __DIR__ . '/../includes/class-migrate-sb-storyblok.php';
 
 		$sb = new Migrate_Sb_Storyblok();
-		$sb->postStories($_POST);
+		$output = $sb->postStories(['post' => $request->get_param('id')]);
+
+		if (isset($output['isSuccess']) && !$output['isSuccess']) {
+			wp_send_json_error($output);
+		}
+
+		wp_send_json_success($output);
 
 		exit;
 	}

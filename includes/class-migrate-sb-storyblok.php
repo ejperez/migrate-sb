@@ -51,6 +51,7 @@ class Migrate_Sb_Storyblok
 		$postId = $args['post'];
 		$post = get_post($postId);
 
+		ob_start();
 		echo "$post->post_title ";
 
 		$story = [
@@ -74,7 +75,7 @@ class Migrate_Sb_Storyblok
 			]
 		];
 
-		foreach (array_keys(pll_the_languages(['raw' => true])) as $language) {			
+		foreach (array_keys(pll_the_languages(['raw' => true])) as $language) {
 			if ($language === pll_default_language())
 				continue;
 
@@ -101,10 +102,11 @@ class Migrate_Sb_Storyblok
 		}
 
 		if ($GLOBALS['msb_test_mode'] ?? false) {
-			die('<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>');
+			$body = $story['story']['content']['body'];
+			return compact('story', 'body');
 		}
 
-		echo '<pre>' . json_encode($story, JSON_PRETTY_PRINT) . '</pre>';
+		$isSuccess = true;
 
 		try {
 			$storyResult = $this->managementClient->post(
@@ -112,13 +114,14 @@ class Migrate_Sb_Storyblok
 				$story
 			)->getBody();
 
-			$id = $storyResult['story']['id'];
-
-			echo "<span style='color:green'>Created $id!</span><br>";
+			echo $storyResult['story']['id'];
 		} catch (Exception $exception) {
-			$message = $exception->getMessage();
-			echo "<span style='color:red'>$message</span><br>";
+			echo $exception->getMessage();
+			$isSuccess = false;
 		}
 
+		$logs = ob_get_clean();
+
+		return compact('logs', 'story', 'isSuccess');
 	}
 }
