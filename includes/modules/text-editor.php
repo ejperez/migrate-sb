@@ -18,6 +18,14 @@ class ModuleTextEditor extends Module
 		]);
 
 		$this->localizeField('content', function ($post, $section) {
+			if(!$section['content'] && $section['title']) {
+				return [];
+			}
+
+			if(!$section['content']) {
+				$section['content'] = $section['title'];
+			}
+
 			$editor = new Tiptap\Editor([
 				'content' => $section['content'],
 				'extensions' => [
