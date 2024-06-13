@@ -14,7 +14,7 @@
 $posts = get_posts([
 	'post_type' => 'post',
 	'posts_per_page' => 1000,
-	'post_status' => 'publish,draft',
+	'post_status' => 'publish,draft,private',
 	'orderby' => 'post_title',
 	'order' => 'ASC',
 	'lang' => pll_default_language()
