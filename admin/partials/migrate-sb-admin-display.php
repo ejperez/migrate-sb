@@ -14,7 +14,7 @@
 $posts = get_posts([
 	'post_type' => 'post',
 	'posts_per_page' => 1000,
-	'post_status' => 'publish',
+	'post_status' => 'publish,draft',
 	'orderby' => 'post_title',
 	'order' => 'ASC',
 	'lang' => pll_default_language()
@@ -36,7 +36,7 @@ $imageCache = get_option('sb_image_cache', []);
 
 	<form id="js-migrate-sb-form" target="_blank" method="post" action="<?= home_url() ?>?_storyblok=1">
 		<p>
-			Post<br>
+			Post (<?= count($posts) ?>)<br>
 			<select name="posts" required multiple size="20">
 				<?= $postsOptions ?>
 			</select>
