@@ -118,16 +118,45 @@ class Migrate_Sb_Storyblok
 			return compact('story', 'body');
 		}
 
-		try {
-			$storyResult = $this->managementClient->post(
-				'spaces/' . $this->settings->space_id . '/stories/',
-				$story
-			)->getBody();
+		// Check if blog exists, update if it exists, create if not
+		$storyExists = [];
 
-			echo 'Storyblok ID: ' . $storyResult['story']['id'];
+		try {
+			$storyExists = $this->managementClient->get(
+				'spaces/' . $this->settings->space_id . '/stories',
+				[
+					'by_slugs' => '*' . $post->post_name,
+					'with_parent' => $this->settings->folder
+				]
+			)->getBody();
 		} catch (Exception $exception) {
 			echo $exception->getMessage();
-			$isSuccess = false;
+		}
+
+		if (isset($storyExists['stories']) && !empty($storyExists['stories'])) {
+			try {
+				$storyResult = $this->managementClient->put(
+					'spaces/' . $this->settings->space_id . '/stories/' . $storyExists['stories'][0]['id'],
+					$story
+				)->getBody();
+
+				echo 'Updated: ' . $storyResult['story']['id'];
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				$isSuccess = false;
+			}
+		} else {
+			try {
+				$storyResult = $this->managementClient->post(
+					'spaces/' . $this->settings->space_id . '/stories/',
+					$story
+				)->getBody();
+
+				echo 'Created: ' . $storyResult['story']['id'];
+			} catch (Exception $exception) {
+				echo $exception->getMessage();
+				$isSuccess = false;
+			}
 		}
 
 		$logs = ob_get_clean();
