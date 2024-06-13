@@ -68,7 +68,19 @@ class Migrate_Sb_Storyblok
 						'body' =>
 							array_merge(
 								[['component' => 'blogPage']],
-								Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post)
+								Mapper::mapSectionsToBlocks(get_field('sections', $postId), $post),
+								[
+									[
+										'component' => 'blogPagination',
+										'newerPost' => 'newer post',
+										'olderPost' => 'older post'
+									],
+									[
+										'title' => 'Related articles',
+										'component' => 'relatedArticles',
+										'linkLabel' => 'read more'
+									]
+								],
 							)
 					]
 				)
