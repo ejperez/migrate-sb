@@ -10,10 +10,10 @@ class Mapper
 
 		$blocks = [];
 
-		foreach ($sections as $section) {
+		foreach ($sections as $index => $section) {
 			try {
 				// echo $section['acf_fc_layout'];
-				$block = (ModuleFactory::build($section['acf_fc_layout'], $section))->getBlock();				
+				$block = (ModuleFactory::build($section['acf_fc_layout'], $section, $index))->getBlock();				
 
 				if (empty($block)) {
 					continue;

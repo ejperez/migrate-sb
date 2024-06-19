@@ -29,7 +29,7 @@ class ModuleFactory
 		}
 	}
 
-	public static function build(string $moduleName, array $data): Module
+	public static function build(string $moduleName, array $data, int $index = 0): Module
 	{
 		$file = dirname(__FILE__) . "/modules/$moduleName.php";
 
@@ -53,13 +53,10 @@ class ModuleFactory
 		$currentTranslations = [];
 
 		foreach (self::$translations as $lang => $postSections) {
-			$filteredFields = array_filter($postSections['sections'], function ($section) use ($moduleName) {
-				return $section['acf_fc_layout'] === $moduleName;
-			});
 
 			$currentTranslations[$lang] = [
 				'post' => $postSections['post'],
-				'section' => empty($filteredFields) ? [] : reset($filteredFields)
+				'section' => $postSections['sections'][$index] ?? []
 			];
 		}
 
